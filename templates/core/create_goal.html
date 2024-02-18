@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Goal - Time Navigator</title>
+    <!-- Bootstrap CSS -->
+    {% load bootstrap5 %}
+    {% bootstrap_css %}
+    <style>
+        /* Custom CSS for form styling */
+        body {
+            background: linear-gradient(135deg, #8e9eab, #eef2f3); /* Gradient background */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+        }
+        h1 {
+            color: #2C3E50; /* Heading color */
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        form {
+            background: linear-gradient(135deg, #f5f7fa, #c3cfe2); /* Gradient form background */
+            border-radius: 20px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); /* Shadow effect */
+            padding: 20px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        label {
+            font-weight: bold;
+            color: #2C3E50; /* Label color */
+        }
+        input[type="text"],
+        input[type="date"],
+        input[type="number"],
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ced4da; /* Gray border */
+            border-radius: 5px;
+            box-sizing: border-box;
+            background-color: #fff; /* White input background */
+        }
+        button[type="submit"] {
+            background: linear-gradient(135deg, #007bff, #0056b3); /* Gradient button background */
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+        button[type="submit"]:hover {
+            background: linear-gradient(135deg, #0056b3, #003a75); /* Darker gradient on hover */
+        }
+    </style>
+</head>
+<body>
+    <h1>Create Goal</h1>
+    <form method="post">
+        {% csrf_token %}
+        <label for="title">Title:</label><br>
+        <input type="text" id="title" name="title" required><br>
+        <label for="description">Description:</label><br>
+        <textarea id="description" name="description" rows="4" required></textarea><br>
+        <label for="start_date">Start Date:</label><br>
+        <input type="date" id="start_date" name="start_date" required><br>
+        <label for="target_completion_date">Target Completion Date:</label><br>
+        <input type="date" id="target_completion_date" name="target_completion_date" required><br>
+        <label for="difficulty">Difficulty (1-10):</label><br>
+        <input type="number" id="difficulty" name="difficulty" min="1" max="10" required><br>
+        <button type="submit">Create</button>
+    </form>
+</body>
+</html>

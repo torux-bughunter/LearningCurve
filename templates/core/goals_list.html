@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Goals List</title>
+</head>
+<body>
+    <h1>Goals List</h1>
+    <ul>
+        {% for goal in goals %}
+        <li>{{ goal.title }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

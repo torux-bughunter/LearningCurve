@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learning Curve - Calendar</title>
+    <!-- Bootstrap CSS -->
+    {% load bootstrap5 %}
+    {% bootstrap_css %}
+    <style>
+        .modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Modal Content */
+.modal-content {
+  background-color: #fefefe;
+  margin: 15% auto; /* 15% from the top and centered */
+  padding: 20px;
+  border: 1px solid #888;
+  width: 50%; /* Could be more or less, depending on screen size */
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+/* Close Button */
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+        /* Custom CSS */
+        body {
+            background: linear-gradient(135deg, #8e9eab, #eef2f3);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        header {
+            background: linear-gradient(90deg, #085078, #85D8CE);
+            color: #fff;
+            padding: 30px 0;
+            text-align: center;
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+        }
+
+        .total-points {
+            background: linear-gradient(90deg, #43cea2, #185a9d);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 22px;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .card {
+            background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+            border-radius: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Custom CSS for goal difficulty color coding */
+        .urgent {
+            background-color: #ff6b6b;
+            color: #fff;
+        }
+
+        .important {
+            background-color: #ffd166;
+            color: #000;
+        }
+
+        .normal {
+            background-color: #06d6a0;
+            color: #000;
+        }
+
+        /* Additional Styles */
+        footer {
+            background: linear-gradient(90deg, #757F9A, #D7DDE8);
+            color: #fff;
+            padding: 20px 0;
+            text-align: center;
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+        }
+
+        .calendar-title {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            color: #2C3E50;
+        }
+
+        .list-group-item {
+            border: none;
+            border-radius: 20px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .list-group-item:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Braindump Form Styles */
+        .braindump-form {
+            margin-bottom: 20px;
+        }
+
+        .braindump-input {
+            width: 100%;
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .submit-button {
+            background-color: #43cea2;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .submit-button:hover {
+            background-color: #185a9d;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <div class="container">
+        <h1>Learning Curve</h1>
+        <p class="lead">Empowering neurodiverse children with ADHD through structured routines and positive reinforcement</p>
+        <div>Total Points: <span id="points" class="total-points">0</span></div>
+    </div>
+</header>
+
+<div class="container">
+    <h2 class="text-center calendar-title">Calendar</h2>
+
+    <!-- Braindump Form -->
+    <form class="braindump-form">
+        {% csrf_token %}
+        <textarea class="braindump-input" name="braindump" rows="4" placeholder="Enter your braindump here..."></textarea><br>
+        <button type="button" class="submit-button">Submit Braindump</button>
+    </form>
+
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        <!-- Iterate over calendar -->
+        {% for day, events in calendar.items %}
+            <div class="col">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ day }}</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">Events:</h6>
+                        <ul class="list-group list-group-flush">
+                            <!-- Iterate over goals -->
+                            {% for event in events.goals %}
+                                {% if event.type == 'goal' %}
+                                    <li class="list-group-item {% if event.event.difficulty >= 8 %}urgent{% elif event.event.difficulty >= 4 %}important{% else %}normal{% endif %}">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="goal_{{ event.event.id }}" data-difficulty="{{ event.event.difficulty }}">
+                                            <label class="form-check-label" for="goal_{{ event.event.id }}">
+                                                <strong>{{ event.event.title }}</strong><br>
+                                                {{ event.event.description }}
+                                            </label>
+                                        </div>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    
+    </div>
+<div class="text-center">
+            <a href="/goals/create" class="btn btn-primary">Create New Goal</a>
+        </div>
+</div>
+<!-- Modal Dialog HTML -->
+<div id="gameModal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <h2>Congratulations!</h2>
+    <p>You have earned a Google Doodle game reward!</p>
+    <button id="playGameBtn">Play Game</button>
+  </div>
+</div>
+<footer>
+    <div class="container">
+        <p>&copy; 2024 Learning Curve. All rights reserved.</p>
+    </div>
+</footer>
+<!-- Bootstrap JavaScript Bundle with Popper -->
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+<script>
+// Initialize current points
+var currentPoints = 0;
+function closeModal() {
+  var modal = document.getElementById('gameModal');
+  modal.style.display = 'none';
+}
+document.querySelector('.close').addEventListener('click', closeModal);
+document.getElementById('gameModal').addEventListener('click', function(event) {
+  if (event.target === this) {
+    closeModal();
+  }
+});
+
+document.querySelectorAll('.form-check-input').forEach(function(checkbox) {
+    checkbox.addEventListener('change', function() {
+        // Calculate points based on difficulty
+        var difficulty = parseInt(this.getAttribute('data-difficulty'));
+        var points = difficulty * (1/2);
+
+        // Update points display
+        var pointsDisplay = document.getElementById('points');
+        var currentPoints = parseInt(pointsDisplay.textContent);
+        if (this.checked) {
+            currentPoints += points;
+        } else {
+            currentPoints -= points;
+        }
+        pointsDisplay.textContent = currentPoints;
+
+        // Check if the current points reach a multiple of 10
+        if (currentPoints >= 10) {
+            // Display a random Google Doodle game popup as a reward
+            var selectedGame = selectRandomGame();
+            showDoodleGamePopup(selectedGame);
+            // Reset points
+            currentPoints = 0;
+            pointsDisplay.textContent = currentPoints;
+        }
+    });
+});
+
+// Add event listener to submit braindump button
+document.querySelector('.submit-button').addEventListener('click', function() {
+    var braindump = document.querySelector('.braindump-input').value;
+    var csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', '/process_braindump/');
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    xhr.setRequestHeader('X-CSRFToken', csrfToken);  // Set the CSRF token header
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === XMLHttpRequest.DONE) {
+            if (xhr.status === 200) {
+                alert('Braindump processed successfully!');
+                // Parse the response and add new tasks to the calendar
+                var tasks = JSON.parse(xhr.responseText);
+                addTasksToCalendar(tasks);
+                // Clear the braindump input field
+                document.querySelector('.braindump-input').value = '';
+                // Update points
+                updatePoints(tasks.length);
+            } else {
+                alert('Failed to process braindump!');
+            }
+        }
+    };
+    xhr.send('braindump=' + encodeURIComponent(braindump));
+});
+
+// Function to add new tasks to the calendar
+function addTasksToCalendar(tasks) {
+    // Loop through the tasks and add them to the calendar dynamically
+    tasks.forEach(function(task) {
+        // Create a new list item
+        var listItem = document.createElement('li');
+        listItem.classList.add('list-group-item');
+        // Construct the HTML content for the list item
+        listItem.innerHTML = `
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="task_${task.id}" data-difficulty="${task.difficulty}" onchange="updatePoints(1)">
+                <label class="form-check-label" for="task_${task.id}">
+                    <strong>${task.title}</strong><br>
+                    ${task.description}
+                </label>
+            </div>`;
+        // Append the new list item to the calendar
+        var calendar = document.querySelector('.calendar-container');
+        if (calendar) {
+            calendar.appendChild(listItem);
+        }
+    });
+}
+
+// List of Google Doodle game URLs or IDs
+var doodleGames = [
+    'https://www.google.com/doodles/halloween-2016',
+    'https://www.google.com/doodles/earth-day-2020',
+    // Add more game URLs or IDs as needed
+];
+
+// Function to select a random game from the list
+function selectRandomGame() {
+    var randomIndex = Math.floor(Math.random() * doodleGames.length);
+    return doodleGames[randomIndex];
+}
+
+// Function to display a popup with the selected game
+function showDoodleGamePopup(gameURL) {
+    // Set the game URL to the button
+    playGameBtn.setAttribute('onclick', 'window.open("' + gameURL + '", "_blank")');
+
+    // Display the modal
+    var modal = document.getElementById('gameModal');
+    modal.style.display = 'block';
+}
+
+// Function to update points display
+function updatePoints(points) {
+    currentPoints += points; // Update current points
+    var pointsDisplay = document.getElementById('points');
+    pointsDisplay.textContent = currentPoints;
+
+    // Check if the current points reach a multiple of 10
+    if (currentPoints >= 10) {
+        // Display a random Google Doodle game popup as a reward
+        var selectedGame = selectRandomGame();
+        showDoodleGamePopup(selectedGame);
+        // Reset points
+        currentPoints = 0;
+        pointsDisplay.textContent = currentPoints;
+    }
+}
+</script>
+
+</body>
+</html>
